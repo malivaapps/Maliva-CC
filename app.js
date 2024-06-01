@@ -18,7 +18,7 @@ app.use('/trip', tripRoutes)
 app.use('/destination', destinationRoutes)
 
 app.get("/", (req, res) => {
-  res.status(200).json({mssg: "OK"})
+  res.status(200).json({ mssg: "OK" })
 })
 
 app.listen(process.env.PORT, () => {

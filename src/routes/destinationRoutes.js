@@ -1,19 +1,20 @@
 const express = require('express')
 const router = express.Router()
+const { getAllDestinations, getDestinationDetails, getDestinationReview, createReview, uploadImage } = require("../controllers/destinationController")
 
-router.get('/', (req, res) => {
-     res.send({ mssg: "Get destination" })
-})
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
-router.get('/:destinationID', (req, res) => {
-     res.send({ mssg: "Get details" })
-})
 
-router.get('/:destinationID/reviews', (req, res) => {
-     res.send({ mssg: "GET reviews" })
-})
-router.post('/:destinationID/reviews', (req, res) => {
-     res.send({ mssg: "post reviews" })
-})
+router.get('/', getAllDestinations);
+
+router.get('/:destinationID', getDestinationDetails);
+
+router.get('/:destinationID/reviews', getDestinationReview);
+
+router.post('/:destinationID/reviews', createReview);
+
+router.post('/:destinationID/gallery', upload.single('image'), uploadImage);
 
 module.exports = router
