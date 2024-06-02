@@ -1,10 +1,19 @@
-const { getAllData, getDataById, getReviewsByDestinationId, addReviewToDestination, uploadImageToGallery } = require("../services/getData")
+const {
+  getAllData,
+  getDataById,
+  getReviewsByDestinationId,
+  addReviewToDestination,
+  uploadImageToGallery
+} = require("../services/getData")
+
+const { successResponse, errorResponse } = require('../utils/response')
+
 const getAllDestinations = async (req, res) => {
   try {
     const destinations = await getAllData();
-    res.status(200).json(destinations);
+    successResponse(res, 200, "Successfully get data", destinations)
   } catch (error) {
-    res.status(500).json({ error: error.message })
+    errorResponse(res, 500, "Error Found", error.message)
   }
 };
 
@@ -12,9 +21,9 @@ const getDestinationDetails = async (req, res) => {
   try {
     const { destinationID } = req.params;
     const destination = await getDataById(destinationID);
-    res.status(200).json(destination);
+    successResponse(res, 200, "Successfully get destiantion details", destination)
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    errorResponse(res, 500, "Error Found", error.message)
   }
 };
 
@@ -22,9 +31,9 @@ const getDestinationReview = async (req, res) => {
   try {
     const { destinationID } = req.params;
     const reviews = await getReviewsByDestinationId(destinationID);
-    res.status(200).json(reviews);
+    successResponse(res, 200, "Successfully get destination reviews", reviews)
   } catch (error) {
-    res.status(500).json({ error: error.message })
+    errorResponse(res, 500, "Error Found", error.message)
   }
 };
 
@@ -32,16 +41,18 @@ const getDestinationReview = async (req, res) => {
 const createReview = async (req, res) => {
   try {
     const { destinationID } = req.params;
-    const { reviews } = req.body;
+    const { rating, reviews } = req.body;
     const ts = new Date().getTime();
     const reviewTemplate = {
-      "createAt": ts,
-      "review": reviews
+      "userID": req.userID,
+      "rating": rating,
+      "review": reviews,
+      "createAt": ts
     }
     await addReviewToDestination(destinationID, reviewTemplate);
-    res.status(201).json({ message: 'Review added successfully' });
+    successResponse(res, 200, "Review added successfully")
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    errorResponse(res, 500, "Error Found", error.message)
   }
 };
 
@@ -50,9 +61,9 @@ const uploadImage = async (req, res) => {
     const { destinationID } = req.params;
     const file = req.file;
     const imageUrl = await uploadImageToGallery(destinationID, file);
-    res.status(201).json({ message: 'Image uploaded successfully', imageUrl });
+    successResponse(res, 201, "Image uploaded successfully", imageUrl)
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    errorResponse(res, 500, "Error Found", error.message)
   }
 };
 

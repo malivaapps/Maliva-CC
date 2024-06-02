@@ -3,17 +3,13 @@
 const express = require('express')
 const router = express.Router()
 
-router.post('/signin', (req, res) => {
-     res.send({ mssg: "Generate Trip Planner" })
-})
-router.post('/signup', (req, res) => {
-     res.send({ mssg: "Generate Trip Planner" })
-})
-router.post('/refresh', (req, res) => {
-     res.send({ mssg: "Generate Trip Planner" })
-})
-router.post('/logout', (req, res) => {
-     res.send({ mssg: "Generate Trip Planner" })
-})
+const requireAuth = require('../middlewares/requireAuth')
+
+const { signUp, signIn, logout, refreshToken } = require('../controllers/authController')
+
+router.post('/signin', signIn)
+router.post('/signup', signUp)
+router.post('/refresh-token', refreshToken)
+router.delete('/logout', requireAuth, logout)
 
 module.exports = router
