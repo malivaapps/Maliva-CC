@@ -7,11 +7,7 @@ const checkEmail = async (email) => {
      const query = usersRef.where('email', '==', email);
      const snapshot = await query.get();
 
-     if (snapshot.empty) {
-          return false;
-     } else {
-          return true;
-     }
+     snapshot.empty ? false : true
 }
 
 const addUserData = async (userID, userData) => {
