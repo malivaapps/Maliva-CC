@@ -1,13 +1,12 @@
 const { Firestore } = require('@google-cloud/firestore');
 const { Storage } = require('@google-cloud/storage');
-const { firestoreAuth, storageAuth } = require('../config/authServices')
+const { firestoreAuth, storageAuth } = require('../config/authServices');
+
 // Auth permission Firestore
 const firestore = new Firestore(firestoreAuth);
 const storage = new Storage(storageAuth);
 
-const bucket = storage.bucket('lake_images'); //testing Bucket 
-
-//FIX Code
+const bucket = storage.bucket('lake_images'); //named Bucket 
 
 const getAllData = async () => {
   const snapshot = await firestore.collection('Destinations').get();
@@ -46,7 +45,18 @@ const getReviewsByDestinationId = async (destinationID) => {
   return reviews;
 };
 
-// FIX Code
+const getGalleryByDestinationId = async (destinationID) => {
+  const snapshot = await firestore.collection('Destinations').doc(destinationID).collection('Gallery').get();
+  if (snapshot.empty) {
+    return []
+  }
+
+  let gallery = [];
+  snapshot.forEach(doc => {
+    gallery.push({ id: doc.id, ...doc.data() });
+  });
+  return gallery;
+}
 
 const addReviewToDestination = async (destinationID, reviews) => {
   await firestore.collection('Destinations').doc(destinationID).collection('Reviews').add(reviews);
@@ -76,5 +86,5 @@ const uploadImageToGallery = async (destinationID, file) => {
 };
 
 
-module.exports = { getAllData, getDataById, getReviewsByDestinationId, addReviewToDestination, uploadImageToGallery };
+module.exports = { getAllData, getDataById, getReviewsByDestinationId, getGalleryByDestinationId, addReviewToDestination, uploadImageToGallery };
 

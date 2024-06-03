@@ -1,9 +1,14 @@
 require('dotenv').config();
 const express = require('express')
 const app = express()
+const router = express.Router();
+
+const port = process.env.PORT;
+const host = process.env.HOST;
+
 
 const rateLimitMiddleware = require(`./src/middlewares/rateLimit`)
-const { successResponse, errorResponse } = require('./src/utils/response')
+const { errorResponse } = require('./src/utils/response')
 
 const authRoutes = require('./src/routes/authRoutes')
 const tripRoutes = require('./src/routes/tripRoutes')
@@ -14,18 +19,19 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(rateLimitMiddleware(30));
 
-app.use('/authenticate', authRoutes)
-app.use('/trip', tripRoutes)
-app.use('/destination', destinationRoutes)
+router.use('/authenticate', authRoutes)
+router.use('/trip', tripRoutes)
+router.use('/destination', destinationRoutes)
 
-app.get("/", (req, res) => {
-  successResponse(res, 200, "Server OK")
+router.get("/", (req, res) => {
+  res.json("Welcome to Maliva API")
 })
 
-app.use('*', function (req, res) {
+router.use('*', function (req, res) {
   errorResponse(res, 500, "Request Invalid")
 });
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server is running in http://localhost:${process.env.PORT}`)
+app.use('/api/v1', router);
+app.listen(port, host, () => {
+  console.log(`Server is running at http://${host}:${port}`)
 })
