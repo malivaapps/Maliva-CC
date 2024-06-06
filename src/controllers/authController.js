@@ -1,6 +1,4 @@
 require('dotenv').config();
-const jwt = require('jsonwebtoken')
-
 const bcrypt = require('bcrypt')
 const validator = require('validator')
 const { v4: uuidv4 } = require('uuid')
@@ -8,12 +6,11 @@ const { v4: uuidv4 } = require('uuid')
 const {
      addUserData,
      getUserData,
-     // createSession,
+     createSession,
      checkEmail,
      dropSession
 } = require('../services/authDataServices')
 
-const { createAccessToken, createRefreshToken } = require('../utils/generateToken')
 const { successResponse, errorResponse } = require('../utils/response')
 
 const signUp = async (req, res) => {
@@ -23,8 +20,8 @@ const signUp = async (req, res) => {
                res.status(400).json({ error: "Data is not fulfilled" })
           }
           if (!validator.isEmail(email)) { throw Error("Invalid Email") }
-          if (!validator.isStrongPassword(password)) { throw Error("Weak Password") }
-          const exists = checkEmail(email)
+          if (!validator.isStrongPassword(password)) { throw Error("Weak Password") } //Minimum password 8 characters there are lowercase, uppercase, symbols, numbers
+          const exists = await checkEmail(email)
           if (!exists) {
                const userID = uuidv4()
                const ts = new Date().getTime()
@@ -48,29 +45,17 @@ const signIn = async (req, res) => {
      try {
           const user = await getUserData(email)
           if (user && await bcrypt.compare(password, user.password)) {
-               const accessToken = await createAccessToken(user.userID)
-               const refreshToken = await createRefreshToken(user.userID)
-               successResponse(res, 200, "Login successful", { email, accessToken, refreshToken })
+               const session = uuidv4()
+               const ts = new Date().getTime()
+               const sessionData = { email, userID: user.userID, loginTime: ts }
+               await createSession(session, sessionData)
+               successResponse(res, 200, "Login successful", { email, session })
           } else {
                errorResponse(res, 401, "Client Error", "Email or Password is Invalid")
           }
      } catch (error) {
           res.status(500).json({ error: error.message })
      }
-     // try {
-     //      const user = await getUserData(email)
-     //      if (user && await bcrypt.compare(password, user.password)) {
-     //           const session = uuidv4()
-     //           const ts = new Date().getTime()
-     //           const sessionData = { email, userID: user.userID, loginTime: ts }
-     //           await createSession(session, sessionData)
-     //           successResponse(res, 200, "Login successful", { email, session })
-     //      } else {
-     //           errorResponse(res, 401, "Client Error", "Email or Password is Invalid")
-     //      }
-     // } catch (error) {
-     //      res.status(500).json({ error: error.message })
-     // }
 }
 
 const logout = async (req, res) => {
@@ -82,21 +67,9 @@ const logout = async (req, res) => {
      }
 }
 
-const refreshToken = async (req, res) => {
-     const { refreshToken } = req.body
-     try {
-          const { userID } = jwt.verify(refreshToken, process.env.SECRET_KEY)
-          const accessToken = createAccessToken(userID)
-          successResponse(res, 200, "Update Access Token success", { accessToken })
-     } catch (error) {
-          errorResponse(res, 500, "Error Found", error.message)
-     }
-
-}
-
 module.exports = {
      signUp,
      signIn,
      logout,
-     refreshToken
+
 }

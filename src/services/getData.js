@@ -62,6 +62,31 @@ const addReviewToDestination = async (destinationID, reviews) => {
   await firestore.collection('Destinations').doc(destinationID).collection('Reviews').add(reviews);
 };
 
+const updateRatingupdateDestinationRating = async (destinationID) => {
+  const destinationRef = firestore.collection('Destinations').doc(destinationID);
+  const reviewsRef = await firestore.collection('Destinations').doc(destinationID).collection('Reviews');
+
+  const reviewsSnapshot = await reviewsRef.get();
+  if (reviewsSnapshot.empty) {
+    console.log('No matching documents.');
+    return;
+  }
+
+  let totalRating = 0;
+  let reviewCount = 0;
+
+  reviewsSnapshot.forEach(doc => {
+    totalRating += doc.data().rating;
+    reviewCount++;
+  });
+
+  const newRating = totalRating / reviewCount;
+
+  await destinationRef.update({ Rating: newRating });
+
+  console.log(`Updated destination ${destinationID} rating to ${newRating}`);
+};
+
 const uploadImageToGallery = async (destinationID, file) => {
   const destinationRef = firestore.collection('Destinations').doc(destinationID);
   const destinationDoc = await destinationRef.get();
@@ -70,21 +95,32 @@ const uploadImageToGallery = async (destinationID, file) => {
     throw new Error('Destination not found');
   }
 
-  const blob = bucket.file(`${destinationID}/gallery/${file.originalname}`);
-  const blobStream = blob.createWriteStream({
+  const timestamp = new Date().getTime();
+  const uniqueFileName = `${timestamp}-${file.originalname}`;
+
+  const blobName = `${destinationID}/gallery/${uniqueFileName}`;
+  const blob = bucket.file(blobName);
+  await blob.save(file.buffer, {
     resumable: false,
+    metadata: {
+      contentType: file.mimetype,
+    },
   });
 
-  blobStream.on('finish', async () => {
-    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
-    await destinationRef.collection('Gallery').add({ url: publicUrl });
-  });
+  const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blobName}`;
+  await destinationRef.collection('Gallery').add({ url: publicUrl });
 
-  blobStream.end(file.buffer);
-
-  return `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+  return publicUrl;
 };
 
 
-module.exports = { getAllData, getDataById, getReviewsByDestinationId, getGalleryByDestinationId, addReviewToDestination, uploadImageToGallery };
+module.exports = {
+  getAllData,
+  getDataById,
+  getReviewsByDestinationId,
+  getGalleryByDestinationId,
+  addReviewToDestination,
+  updateRatingupdateDestinationRating,
+  uploadImageToGallery
+};
 

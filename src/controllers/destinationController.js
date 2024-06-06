@@ -4,6 +4,7 @@ const {
   getReviewsByDestinationId,
   getGalleryByDestinationId,
   addReviewToDestination,
+  updateRatingupdateDestinationRating,
   uploadImageToGallery
 } = require("../services/getData")
 
@@ -12,32 +13,34 @@ const { successResponse, errorResponse } = require('../utils/response')
 // Filtering Destination Search
 const getAllDestinations = async (req, res) => {
   try {
-    const { activities, category, minPrice, maxPrice, minRange, maxRange, minRating, maxRating } = req.query;
+    const { activities, category, minPrice, maxPrice, minRange, maxRange, rating } = req.query;
     const destinations = await getAllData();
 
     // Parse categories and activities into arrays if they are comma-separated strings
     const categories = category ? category.split(' ') : null;
     const activitiesList = activities ? activities.split(' ') : null;
 
+
+
     const filters = {
-      minPrice: minPrice,
-      maxPrice: maxPrice,
-      minRange: minRange,
-      maxRange: maxRange,
-      // minRating: minRating,
-      // maxRating: maxRating,
+      minPrice: Number(minPrice),
+      maxPrice: Number(maxPrice),
+      // minRange: minRange,
+      // maxRange: maxRange,
+      rating: Number(rating),
     };
+
+    // To test this route use "?" then what you want to filter it
 
     const filterData = destinations.filter(data => {
       return (
         (!categories || categories.includes(data.Category)) &&
         (!activitiesList || activitiesList.some(activity => data.Activities.includes(activity))) &&
-        (!filters.minPrice || data.Price >= filters.minPrice) &&
-        (!filters.maxPrice || data.Price <= filters.maxPrice) &&
-        (!filters.minRange || data.Range >= filters.minRange) &&
-        (!filters.maxRange || data.Range <= filters.maxRange)
-        // (!filters.minRating || data.Rating >= filters.minRating) &&
-        // (!filters.maxRating || data.Rating <= filters.maxRating)
+        (!filters.minPrice || Number(data.Pricing) >= filters.minPrice) &&
+        (!filters.maxPrice || Number(data.Pricing) <= filters.maxPrice) &&
+        // (!filters.minRange || data.Range >= filters.minRange) &&
+        // (!filters.maxRange || data.Range <= filters.maxRange) &&
+        (!filters.rating || Math.floor(data.Rating) == filters.rating)
       );
     });
 
@@ -83,7 +86,7 @@ const getDestinationReview = async (req, res) => {
 };
 
 
-//Create Review per destinationId
+//Create Review per destination by Id
 const createReview = async (req, res) => {
   try {
     const { destinationID } = req.params;
@@ -96,13 +99,14 @@ const createReview = async (req, res) => {
       "createAt": ts
     }
     await addReviewToDestination(destinationID, reviewTemplate);
+    updateRatingupdateDestinationRating(destinationID);
     successResponse(res, 200, "Review added successfully")
   } catch (error) {
     errorResponse(res, 500, "Error Found", error.message)
   }
 };
 
-//Upload Gallery per destinationId
+//Upload Gallery per destination by Id
 const uploadImage = async (req, res) => {
   try {
     const { destinationID } = req.params;

@@ -9,7 +9,6 @@ const { signUp, signIn, logout, refreshToken } = require('../controllers/authCon
 
 router.post('/signin', signIn)
 router.post('/signup', signUp)
-router.post('/refresh-token', refreshToken)
 router.delete('/logout', requireAuth, logout)
 
 module.exports = router
