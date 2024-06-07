@@ -13,7 +13,7 @@ const { successResponse, errorResponse } = require('../utils/response')
 // Filtering Destination Search
 const getAllDestinations = async (req, res) => {
   try {
-    const { activities, category, minPrice, maxPrice, minRange, maxRange, rating } = req.query;
+    const { activities, category, minPrice, maxPrice, minRange, maxRange, rating , search } = req.query;
     const destinations = await getAllData();
 
     // Parse categories and activities into arrays if they are comma-separated strings
@@ -23,6 +23,7 @@ const getAllDestinations = async (req, res) => {
 
 
     const filters = {
+      search : search,
       minPrice: Number(minPrice),
       maxPrice: Number(maxPrice),
       // minRange: minRange,
@@ -31,9 +32,9 @@ const getAllDestinations = async (req, res) => {
     };
 
     // To test this route use "?" then what you want to filter it
-
     const filterData = destinations.filter(data => {
       return (
+        (!search || data["Destination name"].toLowerCase().includes(filters.search.toLowerCase())) &&
         (!categories || categories.includes(data.Category)) &&
         (!activitiesList || activitiesList.some(activity => data.Activities.includes(activity))) &&
         (!filters.minPrice || Number(data.Pricing) >= filters.minPrice) &&

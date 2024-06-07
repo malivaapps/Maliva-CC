@@ -1,5 +1,5 @@
 const { getSession } = require('../services/authDataServices')
-const jwt = require('jsonwebtoken')
+// const jwt = require('jsonwebtoken')
 require('dotenv')
 
 const requireAuth = async (req, res, next) => {
