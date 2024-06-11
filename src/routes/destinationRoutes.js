@@ -2,10 +2,7 @@ const express = require('express')
 const router = express.Router()
 const { getAllDestinations, getDestinationDetails, getDestinationReview, getDestinationGallery, createReview, uploadImage } = require("../controllers/destinationController")
 const requireAuth = require('../middlewares/requireAuth')
-
-const multer = require('multer');
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const requireUpload = require('../middlewares/limitStoreImg')
 
 router.get('/', getAllDestinations);
 
@@ -17,6 +14,6 @@ router.get('/:destinationID/gallery', getDestinationGallery);
 
 // Secure Route
 router.post('/:destinationID/reviews', requireAuth, createReview);
-router.post('/:destinationID/gallery', requireAuth, upload.single('image'), uploadImage);
+router.post('/:destinationID/gallery', requireAuth, requireUpload, uploadImage);
 
 module.exports = router

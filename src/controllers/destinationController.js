@@ -13,17 +13,17 @@ const { successResponse, errorResponse } = require('../utils/response')
 // Filtering Destination Search
 const getAllDestinations = async (req, res) => {
   try {
-    const { activities, category, minPrice, maxPrice, minRange, maxRange, rating , search } = req.query;
+    const { type, category, minPrice, maxPrice, minRange, maxRange, rating, search } = req.query;
     const destinations = await getAllData();
 
     // Parse categories and activities into arrays if they are comma-separated strings
     const categories = category ? category.split(' ') : null;
-    const activitiesList = activities ? activities.split(' ') : null;
+    const typeList = type ? type.split(' ') : null;
 
 
 
     const filters = {
-      search : search,
+      search: search,
       minPrice: Number(minPrice),
       maxPrice: Number(maxPrice),
       // minRange: minRange,
@@ -34,11 +34,11 @@ const getAllDestinations = async (req, res) => {
     // To test this route use "?" then what you want to filter it
     const filterData = destinations.filter(data => {
       return (
-        (!search || data["Destination name"].toLowerCase().includes(filters.search.toLowerCase())) &&
-        (!categories || categories.includes(data.Category)) &&
-        (!activitiesList || activitiesList.some(activity => data.Activities.includes(activity))) &&
-        (!filters.minPrice || Number(data.Pricing) >= filters.minPrice) &&
-        (!filters.maxPrice || Number(data.Pricing) <= filters.maxPrice) &&
+        (!search || data["Nama Wisata"].toLowerCase().includes(filters.search.toLowerCase())) &&
+        (!categories || categories.some(category => data["Kategori"].toLowerCase().includes(category.toLowerCase()))) &&
+        (!typeList || typeList.some(type => data["Jenis Wisata"].toLowerCase().includes(type.toLowerCase()))) &&
+        (!filters.minPrice || Number(data["Harga"]) >= filters.minPrice) &&
+        (!filters.maxPrice || Number(data["Harga"]) <= filters.maxPrice) &&
         // (!filters.minRange || data.Range >= filters.minRange) &&
         // (!filters.maxRange || data.Range <= filters.maxRange) &&
         (!filters.rating || Math.floor(data.Rating) == filters.rating)
@@ -99,6 +99,9 @@ const createReview = async (req, res) => {
       "review": reviews,
       "createAt": ts
     }
+    if (reviewTemplate.review.length >= 300) {
+      return errorResponse(res, 400, "Review must less than 300 characters", "Review length too long")
+    }
     await addReviewToDestination(destinationID, reviewTemplate);
     updateRatingupdateDestinationRating(destinationID);
     successResponse(res, 200, "Review added successfully")
@@ -112,10 +115,13 @@ const uploadImage = async (req, res) => {
   try {
     const { destinationID } = req.params;
     const file = req.file;
+    if (!file) {
+      return errorResponse(res, 400, "No file uploaded", "File is too large")
+    }
     const imageUrl = await uploadImageToGallery(destinationID, file);
     successResponse(res, 201, "Image uploaded successfully", imageUrl)
   } catch (error) {
-    errorResponse(res, 500, "Error Found", error.message)
+    errorResponse(res, 500, "Error uploading image", error.message)
   }
 };
 

@@ -31,7 +31,7 @@ const signUp = async (req, res) => {
                await addUserData(userID, userData)
                successResponse(res, 200, "Registration Success", { email, username })
           } else {
-               errorResponse(res, 401, "Email Invalid", "Email is alredy in use")
+               errorResponse(res, 401, "Email Invalid", "Email is already in use")
           }
      }
      catch (error) {

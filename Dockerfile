@@ -1,14 +1,22 @@
 # Testing field (NOT FIXED)
 
-FROM node:20 AS builder
+# Base image
+FROM node:20
 
-WORKDIR /usr/src/app 
+# Directory in the container
+WORKDIR /app
 
-COPY package.json package-lock.json ./ 
+# Copy the package.json and package-lock.json files
+COPY package*.json ./
 
-RUN npm ci
-  COPY . .
+# Install the application dependencies
+RUN npm install --production
 
-FROM node:20 AS runner
+# Copy the rest of the application code
+COPY . .
 
-WORKDIR /usr/src/app 
+# Expose the port the app runs on
+EXPOSE 3000
+
+# Define the command to run the application
+CMD ["npm", "run", "start"]

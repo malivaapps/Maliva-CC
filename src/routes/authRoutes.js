@@ -5,7 +5,7 @@ const router = express.Router()
 
 const requireAuth = require('../middlewares/requireAuth')
 
-const { signUp, signIn, logout, refreshToken } = require('../controllers/authController')
+const { signUp, signIn, logout } = require('../controllers/authController')
 
 router.post('/signin', signIn)
 router.post('/signup', signUp)

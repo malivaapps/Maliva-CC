@@ -1,5 +1,4 @@
 const { getSession } = require('../services/authDataServices')
-// const jwt = require('jsonwebtoken')
 require('dotenv')
 
 const requireAuth = async (req, res, next) => {
@@ -21,21 +20,5 @@ const requireAuth = async (req, res, next) => {
           res.status(401).json({ error: err.message })
      }
 }
-
-// const requireAuth = async (req, res, next) => {
-//      const { authorization } = req.headers
-//      if (!authorization) {
-//           return res.status(401).json({ error: "Access Token required" })
-//      }
-//      const accessToken = authorization.split(' ')[1]
-//      try {
-//           const { userID } = jwt.verify(accessToken, process.env.SECRET_KEY)
-//           req.userID = userID
-//           next()
-
-//      } catch (err) {
-//           res.status(401).json({ error: err.message })
-//      }
-// }
 
 module.exports = requireAuth

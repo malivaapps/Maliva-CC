@@ -1,15 +1,15 @@
 const { Firestore } = require('@google-cloud/firestore');
 const { Storage } = require('@google-cloud/storage');
-const { firestoreAuth, storageAuth } = require('../config/authServices');
+const { config, firestoreAuth, storageAuth } = require('../config/authServices');
 
-// Auth permission Firestore
+// Auth permission
 const firestore = new Firestore(firestoreAuth);
 const storage = new Storage(storageAuth);
 
-const bucket = storage.bucket('lake_images'); //named Bucket 
+const bucket = storage.bucket(config.bucketName);
 
 const getAllData = async () => {
-  const snapshot = await firestore.collection('Destinations').get();
+  const snapshot = await firestore.collection('Destinations-Test').get();
   if (snapshot.empty) {
     return [];
   }
@@ -23,7 +23,7 @@ const getAllData = async () => {
 };
 
 const getDataById = async (id) => {
-  const doc = await firestore.collection('Destinations').doc(id).get();
+  const doc = await firestore.collection('Destinations-Test').doc(id).get();
   if (!doc.exists) {
     throw new Error('Destination not found');
   }
@@ -32,7 +32,7 @@ const getDataById = async (id) => {
 };
 
 const getReviewsByDestinationId = async (destinationID) => {
-  const snapshot = await firestore.collection('Destinations').doc(destinationID).collection('Reviews').get();
+  const snapshot = await firestore.collection('Destinations-Test').doc(destinationID).collection('Reviews').get();
   if (snapshot.empty) {
     return [];
   }
@@ -46,7 +46,7 @@ const getReviewsByDestinationId = async (destinationID) => {
 };
 
 const getGalleryByDestinationId = async (destinationID) => {
-  const snapshot = await firestore.collection('Destinations').doc(destinationID).collection('Gallery').get();
+  const snapshot = await firestore.collection('Destinations-Test').doc(destinationID).collection('Gallery').get();
   if (snapshot.empty) {
     return []
   }
@@ -59,12 +59,21 @@ const getGalleryByDestinationId = async (destinationID) => {
 }
 
 const addReviewToDestination = async (destinationID, reviews) => {
-  await firestore.collection('Destinations').doc(destinationID).collection('Reviews').add(reviews);
+  const destinationIdRef = firestore.collection('Destinations-Test');
+  const query = destinationIdRef.where('__name__', '==', destinationID);
+  const snapshot = await query.get();
+
+  if (snapshot.empty) {
+    throw Error('DestinationId not found');
+  } else {
+    await firestore.collection('Destinations-Test').doc(destinationID).collection('Reviews').add(reviews);
+  }
+
 };
 
 const updateRatingupdateDestinationRating = async (destinationID) => {
-  const destinationRef = firestore.collection('Destinations').doc(destinationID);
-  const reviewsRef = await firestore.collection('Destinations').doc(destinationID).collection('Reviews');
+  const destinationRef = firestore.collection('Destinations-Test').doc(destinationID);
+  const reviewsRef = await firestore.collection('Destinations-Test').doc(destinationID).collection('Reviews');
 
   const reviewsSnapshot = await reviewsRef.get();
   if (reviewsSnapshot.empty) {
@@ -82,13 +91,13 @@ const updateRatingupdateDestinationRating = async (destinationID) => {
 
   const newRating = totalRating / reviewCount;
 
-  await destinationRef.update({ Rating: newRating });
+  await destinationRef.update({ Rating: newRating.toFixed(1) });
 
   console.log(`Updated destination ${destinationID} rating to ${newRating}`);
 };
 
 const uploadImageToGallery = async (destinationID, file) => {
-  const destinationRef = firestore.collection('Destinations').doc(destinationID);
+  const destinationRef = firestore.collection('Destinations-Test').doc(destinationID);
   const destinationDoc = await destinationRef.get();
 
   if (!destinationDoc.exists) {

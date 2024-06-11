@@ -1,11 +1,7 @@
-require('dotenv').config();
 const express = require('express')
 const app = express()
 const router = express.Router();
-
-const port = process.env.PORT;
-const host = process.env.HOST;
-
+const { config } = require('./src/config/authServices')
 
 const rateLimitMiddleware = require(`./src/middlewares/rateLimit`)
 const { errorResponse } = require('./src/utils/response')
@@ -32,6 +28,6 @@ router.use('*', function (req, res) {
 });
 
 app.use('/api/v1', router);
-app.listen(port, host, () => {
-  console.log(`Server is running at http://${host}:${port}`)
+app.listen(config.port, config.host, () => {
+  console.log(`Server is running at http://${config.host}:${config.port}`)
 })
