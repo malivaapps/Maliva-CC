@@ -1,19 +1,19 @@
 const express = require('express')
 const router = express.Router()
+const { getAllDestinations, getDestinationDetails, getDestinationReview, getDestinationGallery, createReview, uploadImage } = require("../controllers/destinationController")
+const requireAuth = require('../middlewares/requireAuth')
+const requireUpload = require('../middlewares/limitStoreImg')
 
-router.get('/', (req, res) => {
-     res.send({ mssg: "Get destination" })
-})
+router.get('/', getAllDestinations);
 
-router.get('/:destinationID', (req, res) => {
-     res.send({ mssg: "Get details" })
-})
+router.get('/:destinationID', getDestinationDetails);
 
-router.get('/:destinationID/reviews', (req, res) => {
-     res.send({ mssg: "GET reviews" })
-})
-router.post('/:destinationID/reviews', (req, res) => {
-     res.send({ mssg: "post reviews" })
-})
+router.get('/:destinationID/reviews', getDestinationReview);
+
+router.get('/:destinationID/gallery', getDestinationGallery);
+
+// Secure Route
+router.post('/:destinationID/reviews', requireAuth, createReview);
+router.post('/:destinationID/gallery', requireAuth, requireUpload, uploadImage);
 
 module.exports = router

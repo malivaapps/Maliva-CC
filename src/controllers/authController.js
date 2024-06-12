@@ -1,71 +1,75 @@
-const { Firestore } = require('@google-cloud/firestore');
-const jwt = require('jsonwebtoken')
+require('dotenv').config();
 const bcrypt = require('bcrypt')
-const nanoid = require('nanoid')
+const validator = require('validator')
+const { v4: uuidv4 } = require('uuid')
 
-const firestore = new Firestore({
-     projectId: "submissionmlgc-rahmatrohmani",
-     keyFilename: "asdasdasdadasdasd",
-});
+const {
+     addUserData,
+     getUserData,
+     createSession,
+     checkEmail,
+     dropSession
+} = require('../services/authDataServices')
 
-const createToken = (credential_id) => {
-     return jwt.sign({ credential_id }, process.env.SECRET_KEY, { expiresIn: '3d' })
-}
+const { successResponse, errorResponse } = require('../utils/response')
 
 const signUp = async (req, res) => {
-     const { username, email, password } = req.body // memperoleh data email, password , username
+     const { username, email, password } = req.body
      try {
-          if (!email || !password || !username) { //memastikan data lengkap
-               res.status(400).json({ error: "Fields harus diisi" })
+          if (!email || !password || !username) {
+               res.status(400).json({ error: "Data is not fulfilled" })
           }
-
-          const userId = nanoid.nanoid(30)
-          // const timestamp = Date.now()
-          // const salt = await bcrypt.genSalt(10)
-          // const hash = await bcrypt.hash(password, salt)
-
-
-          const token = createToken(userId)
-          res.status(200).json({ email: email, token: token })
+          if (!validator.isEmail(email)) { throw Error("Invalid Email") }
+          if (!validator.isStrongPassword(password)) { throw Error("Weak Password") } //Minimum password 8 characters there are lowercase, uppercase, symbols, numbers
+          const exists = await checkEmail(email)
+          if (!exists) {
+               const userID = uuidv4()
+               const ts = new Date().getTime()
+               const salt = await bcrypt.genSalt(10)
+               const hash = await bcrypt.hash(password, salt)
+               const userData = { username: username, email: email, password: hash, createdAt: ts }
+               await addUserData(userID, userData)
+               successResponse(res, 200, "Registration Success", { email, username })
+          } else {
+               errorResponse(res, 401, "Email Invalid", "Email is already in use")
+          }
      }
      catch (error) {
-          res.status(400).json({ error: error.message })
+          errorResponse(res, 500, "Error Found", error.message)
      }
 }
 
 const signIn = async (req, res) => {
      const { email, password } = req.body
-     const usersRef = firestore.collection('users');
-     const query = usersRef.where('email', '==', email);
 
      try {
-          const snapshot = await query.get();
-
-          if (snapshot.empty) {
-               console.log('No matching documents.');
-               res.json({ success: false, message: 'User not found' })
-          }
-
-          let user = null;
-          snapshot.forEach(doc => {
-               user = doc.data();
-               user.id = doc.id;
-          });
-
+          const user = await getUserData(email)
           if (user && await bcrypt.compare(password, user.password)) {
-               console.log('Login successful');
-               res.json({ success: true, message: 'Login successful', user: user })
+               const session = uuidv4()
+               const ts = new Date().getTime()
+               const sessionData = { email, userID: user.userID, loginTime: ts }
+               await createSession(session, sessionData)
+               successResponse(res, 200, "Login successful", { email, session })
           } else {
-               console.log('Invalid password');
-               res.json({ success: false, message: 'Invalid password' })
+               errorResponse(res, 401, "Client Error", "Email or Password is Invalid")
           }
      } catch (error) {
-          console.error('Error getting documents: ', error);
-          res.json({ success: false, message: 'Error occurred'})
+          res.status(500).json({ error: error.message })
+     }
+}
+
+const logout = async (req, res) => {
+     try {
+          await dropSession(req.session)
+          successResponse(res, 200, "Logout success")
+     } catch (error) {
+          errorResponse(res, 500, "Error Found", error.message)
      }
 }
 
 module.exports = {
      signUp,
-     signIn
+     signIn,
+     logout,
+
 }
