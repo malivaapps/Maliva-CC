@@ -52,7 +52,7 @@ env:
   PROJECT_ID: ch2-ps103-maliva-project # TODO: update Google Cloud project id
   GAR_LOCATION: asia-southeast1 # TODO: update Artifact Registry location
   GAR_REPOSITORY_NAME: maliva-be # TODO: update Artifact Registry Repository name
-  SERVICE: maliva-be-cloud-run-github-actions # TODO: update Cloud Run service name
+  SERVICE: maliva-cloud-run-github-actions # TODO: update Cloud Run service name
   REGION: asia-southeast1 # TODO: update Cloud Run service region
 
 jobs:
