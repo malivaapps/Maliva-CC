@@ -1,5 +1,6 @@
 const { successResponse } = require('../utils/response')
 
+
 const generatePlan = (req, res) => {
      successResponse(res, 200, "Plan Generated Successfully", { data: "SOLO, JOGJA" })
 }

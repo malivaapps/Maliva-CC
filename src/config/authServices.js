@@ -8,6 +8,7 @@ const config = {
   googleServiceCreden: JSON.parse(process.env.CREDENTIALS),
   secret: process.env.SECRET_KEY,
   bucketName: process.env.STORAGE_NAME,
+  projectID: process.env.PROJECT_ID,
 };
 
 const firestoreAuth = {
