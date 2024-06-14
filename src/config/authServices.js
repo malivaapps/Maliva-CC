@@ -5,7 +5,7 @@ dotenv.config();
 const config = {
   port: process.env.PORT || 3000,
   host: process.env.HOST,
-  googleServiceCreden: JSON.parse(process.env.CREDENTIALS),
+  googleServiceCreden: process.env.CREDENTIALS,
   secret: process.env.SECRET_KEY,
   bucketName: process.env.STORAGE_NAME,
   projectID: process.env.PROJECT_ID,
