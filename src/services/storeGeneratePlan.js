@@ -1,11 +1,8 @@
 const { Firestore } = require('@google-cloud/firestore');
-const path = require("path");
+const { firestoreAuth } = require('../config/authServices')
 
 async function storeGeneratePlan(id, data) {
-  const firestore = new Firestore({
-    projectId: "submissionmlgc-rahmatrohmani",
-    keyFilename: path.join(__dirname, './keyfile.json'),
-  });
+  const firestore = new Firestore(firestoreAuth);
 
   const docRef = firestore.collection('generate').doc(id);
   await docRef.set(data);

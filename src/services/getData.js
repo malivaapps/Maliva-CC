@@ -9,7 +9,7 @@ const storage = new Storage(storageAuth);
 const bucket = storage.bucket(config.bucketName);
 
 const getAllData = async () => {
-  const snapshot = await firestore.collection('Destinations-Test').get();
+  const snapshot = await firestore.collection('Destinations').get();
   if (snapshot.empty) {
     return [];
   }
@@ -23,7 +23,7 @@ const getAllData = async () => {
 };
 
 const getDataById = async (id) => {
-  const doc = await firestore.collection('Destinations-Test').doc(id).get();
+  const doc = await firestore.collection('Destinations').doc(id).get();
   if (!doc.exists) {
     throw new Error('Destination not found');
   }
@@ -32,7 +32,7 @@ const getDataById = async (id) => {
 };
 
 const getReviewsByDestinationId = async (destinationID) => {
-  const snapshot = await firestore.collection('Destinations-Test').doc(destinationID).collection('Reviews').get();
+  const snapshot = await firestore.collection('Destinations').doc(destinationID).collection('Reviews').get();
   if (snapshot.empty) {
     return [];
   }
@@ -46,7 +46,7 @@ const getReviewsByDestinationId = async (destinationID) => {
 };
 
 const getGalleryByDestinationId = async (destinationID) => {
-  const snapshot = await firestore.collection('Destinations-Test').doc(destinationID).collection('Gallery').get();
+  const snapshot = await firestore.collection('Destinations').doc(destinationID).collection('Gallery').get();
   if (snapshot.empty) {
     return []
   }
@@ -59,21 +59,21 @@ const getGalleryByDestinationId = async (destinationID) => {
 }
 
 const addReviewToDestination = async (destinationID, reviews) => {
-  const destinationIdRef = firestore.collection('Destinations-Test');
+  const destinationIdRef = firestore.collection('Destinations');
   const query = destinationIdRef.where('__name__', '==', destinationID);
   const snapshot = await query.get();
 
   if (snapshot.empty) {
     throw Error('DestinationId not found');
   } else {
-    await firestore.collection('Destinations-Test').doc(destinationID).collection('Reviews').add(reviews);
+    await firestore.collection('Destinations').doc(destinationID).collection('Reviews').add(reviews);
   }
 
 };
 
 const updateRatingupdateDestinationRating = async (destinationID) => {
-  const destinationRef = firestore.collection('Destinations-Test').doc(destinationID);
-  const reviewsRef = await firestore.collection('Destinations-Test').doc(destinationID).collection('Reviews');
+  const destinationRef = firestore.collection('Destinations').doc(destinationID);
+  const reviewsRef = await firestore.collection('Destinations').doc(destinationID).collection('Reviews');
 
   const reviewsSnapshot = await reviewsRef.get();
   if (reviewsSnapshot.empty) {
@@ -97,7 +97,7 @@ const updateRatingupdateDestinationRating = async (destinationID) => {
 };
 
 const uploadImageToGallery = async (destinationID, file) => {
-  const destinationRef = firestore.collection('Destinations-Test').doc(destinationID);
+  const destinationRef = firestore.collection('Destinations').doc(destinationID);
   const destinationDoc = await destinationRef.get();
 
   if (!destinationDoc.exists) {
