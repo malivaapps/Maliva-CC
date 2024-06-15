@@ -6,7 +6,7 @@ const { config, firestoreAuth, storageAuth } = require('../config/authServices')
 const firestore = new Firestore(firestoreAuth);
 const storage = new Storage(storageAuth);
 
-const bucket = storage.bucket("warehouse_maliva");
+const bucket = storage.bucket(config.bucketName);
 
 const getAllData = async () => {
   const snapshot = await firestore.collection('Destinations').get();
