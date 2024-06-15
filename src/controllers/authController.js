@@ -72,15 +72,11 @@ const signIn = async (req, res) => {
 };
 
 const logout = async (req, res) => {
-  const sessionID = req.body.sessionID; // Assuming session ID is passed in the request body
   try {
-    if (!sessionID) {
-      return errorResponse(res, 400, "Session ID is required");
-    }
-    await dropSession(sessionID);
+    await dropSession(req.session);
     successResponse(res, 200, "Logout success");
   } catch (error) {
-    errorResponse(res, 500, "Error during logout", error.message);
+    errorResponse(res, 500, "Error Found", error.message);
   }
 };
 
