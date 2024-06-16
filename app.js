@@ -13,7 +13,7 @@ const destinationRoutes = require('./src/routes/destinationRoutes')
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(rateLimitMiddleware(30));
+app.use(rateLimitMiddleware(1000));
 
 router.use('/authenticate', authRoutes)
 router.use('/trip', tripRoutes)
