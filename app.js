@@ -3,7 +3,7 @@ const app = express()
 const router = express.Router();
 const { config } = require('./src/config/authServices')
 
-const rateLimitMiddleware = require(`./src/middlewares/rateLimit`)
+const rateLimit = require(`./src/middlewares/rateLimit`)
 const { errorResponse } = require('./src/utils/response')
 
 const authRoutes = require('./src/routes/authRoutes')
@@ -12,9 +12,8 @@ const destinationRoutes = require('./src/routes/destinationRoutes')
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.set('trust proxy', true);
 
-app.use(rateLimitMiddleware(1000));
+app.use(rateLimit(100));
 
 router.use('/authenticate', authRoutes)
 router.use('/trip', tripRoutes)
