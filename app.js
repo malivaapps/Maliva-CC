@@ -12,6 +12,7 @@ const destinationRoutes = require('./src/routes/destinationRoutes')
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.set('trust proxy', true);
 
 app.use(rateLimitMiddleware(1000));
 
@@ -28,6 +29,6 @@ router.use('*', function (req, res) {
 });
 
 app.use('/api/v1', router);
-app.listen(config.port, config.host, () => {
-  console.log(`Server is running at http://${config.host}:${config.port}`)
+app.listen(config.port, () => {
+  console.log(`Server is listening on ${config.port}`)
 })
