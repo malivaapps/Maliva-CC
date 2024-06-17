@@ -5,11 +5,11 @@ const router = express.Router();
 
 const requireAuth = require("../middlewares/requireAuth");
 
-const { userProfile, signUp, signIn, logout } = require("../controllers/authController");
+const { updateProfile, signUp, signIn, logout } = require("../controllers/authController");
 
-router.get("/user/profile", requireAuth, userProfile);
 router.post("/signin", signIn);
 router.post("/signup", signUp);
+router.put("/profile", requireAuth, updateProfile);
 router.delete("/logout", requireAuth, logout);
 
 module.exports = router;
