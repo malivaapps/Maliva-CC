@@ -1,12 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const { getAllDestinations, getRecommendation, getDestinationDetails, getDestinationReview, getDestinationGallery, createReview, uploadImage } = require("../controllers/destinationController");
+const { getAllDestinations, getDestinationDetails, getDestinationReview, getDestinationGallery, createReview, uploadImage } = require("../controllers/destinationController");
 const requireAuth = require("../middlewares/requireAuth");
 const requireUpload = require("../middlewares/limitStoreImg");
 
 router.get("/", getAllDestinations);
-
-router.get("/recommendation", getRecommendation);
 
 router.get("/:destinationID", getDestinationDetails);
 
