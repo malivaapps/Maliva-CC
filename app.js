@@ -15,6 +15,8 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(rateLimit(100));
 
+app.set('trustProxy', 1);
+
 router.use('/authenticate', authRoutes)
 router.use('/trip', tripRoutes)
 router.use('/destination', destinationRoutes)

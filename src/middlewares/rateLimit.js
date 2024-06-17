@@ -6,7 +6,8 @@ const rateLimit = (maxLimit) => {
     max: maxLimit,
     message: `You have exceeded your ${maxLimit} requests per minute limit.`,
     headers: true,
-    trustProxy: true
+    standardHeaders: true,
+    legacyHeaders: false
   });
   return rateLimitMiddleware
 }
