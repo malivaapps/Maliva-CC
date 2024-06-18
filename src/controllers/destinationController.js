@@ -1,6 +1,9 @@
 const { getAllData, getDataById, getReviewsByDestinationId, getGalleryByDestinationId, addReviewToDestination, updateRatingupdateDestinationRating, uploadImageToGallery } = require("../services/getData");
 const { successResponse, errorResponse } = require("../utils/response");
-
+const { v4: uuidv4 } = require("uuid");
+const { getSession } = require("../services/authDataServices")
+const { addDataHistory } = require("../services/authDataServices")
+const { getUserById } = require("../services/authDataServices")
 // Formula for determining between two points
 const haversineDistance = (lat1, long1, lat2, long2) => {
   const toRad = (value) => (value * Math.PI) / 180;
@@ -20,23 +23,55 @@ const haversineDistance = (lat1, long1, lat2, long2) => {
 const getAllDestinations = async (req, res) => {
   try {
     const { type, category, minPrice, maxPrice, minRange, maxRange, rating, search } = req.query;
-    let destinations = await getAllData();
 
-    // Parse categories and activities into arrays if they are comma-separated strings
-    const categories = category ? category.split(" ") : null;
-    const typeList = type ? type.split(" ") : null;
+    // Check if there are any query parameters
+    const hasQueryParams = Object.keys(req.query).length > 0;
+
+    // Check if the user is authenticated
+    const authorization = req.headers.authorization;
+    let userID = null;
+    if (authorization) {
+      const session = authorization.split(' ')[1];
+      try {
+        const user = await getSession(session);
+        if (user) {
+          userID = user.userID;
+        }
+      } catch (err) {
+        // Handle error (e.g., log it) but continue to allow unauthenticated access
+        console.error("Authentication error:", err.message);
+      }
+    }
+    // Check if the search query is at least 5 characters
+    if (hasQueryParams && userID && search && search.length >= 5) {
+      const searchID = uuidv4();
+      const searchHistoryData = {
+        search,
+        timestamp: new Date().getTime(),
+        userID: userID,
+      };
+      // Filter out undefined values from searchHistoryData
+      const filteredSearchHistoryData = Object.fromEntries(
+        Object.entries(searchHistoryData).filter(([_, v]) => v !== undefined)
+      );
+
+      await addDataHistory(searchID, filteredSearchHistoryData);
+    }
+
+    let destinations = await getAllData();
 
     const { lat, long } = req.query;
     if (lat && long && minRange && maxRange) {
       const originLat = parseFloat(lat);
       const originLong = parseFloat(long);
-      destinations = destinations.map((data) => {
-        const newData = {
-          ...data, Range: haversineDistance(originLat, originLong, data["latitude"], data["longitude"]),
-        }
-        return newData;
-      })
+      destinations = destinations.map((data) => ({
+        ...data,
+        Range: haversineDistance(originLat, originLong, data.latitude, data.longitude),
+      }));
     }
+
+    const categories = category ? category.split(" ") : null;
+    const typeList = type ? type.split(" ") : null;
 
     const filters = {
       search: search,
@@ -47,26 +82,22 @@ const getAllDestinations = async (req, res) => {
       rating: Number(rating),
     };
 
-    // To test this route use "?" then what you want to filter it
-    const filterData = destinations.filter((data) => {
-      return (
-        (!search || data["Nama Wisata"].toLowerCase().includes(filters.search.toLowerCase())) &&
-        (!categories || categories.some((category) => data["Kategori"].toLowerCase().includes(category.toLowerCase()))) &&
-        (!typeList || typeList.some((type) => data["Jenis Wisata"].toLowerCase().includes(type.toLowerCase()))) &&
-        (!filters.minPrice || Number(data["Harga"]) >= filters.minPrice) &&
-        (!filters.maxPrice || Number(data["Harga"]) <= filters.maxPrice) &&
-        (!filters.minRange || data.Range >= filters.minRange) &&
-        (!filters.maxRange || data.Range <= filters.maxRange) &&
-        (!filters.rating || Math.floor(data.Rating) == filters.rating)
-      );
-    });
+    const filterData = destinations.filter((data) => (
+      (!search || data["Nama Wisata"].toLowerCase().includes(filters.search.toLowerCase())) &&
+      (!categories || categories.some((cat) => data["Kategori"].toLowerCase().includes(cat.toLowerCase()))) &&
+      (!typeList || typeList.some((t) => data["Jenis Wisata"].toLowerCase().includes(t.toLowerCase()))) &&
+      (!filters.minPrice || Number(data["Harga"]) >= filters.minPrice) &&
+      (!filters.maxPrice || Number(data["Harga"]) <= filters.maxPrice) &&
+      (!filters.minRange || data.Range >= filters.minRange) &&
+      (!filters.maxRange || data.Range <= filters.maxRange) &&
+      (!filters.rating || Math.floor(data.Rating) == filters.rating)
+    ));
 
     successResponse(res, 200, "Successfully get data", filterData);
   } catch (error) {
     errorResponse(res, 500, "Error Found", error.message);
   }
 };
-
 
 //Display Destination details by Id
 const getDestinationDetails = async (req, res) => {
@@ -119,8 +150,10 @@ const createReview = async (req, res) => {
       return errorResponse(res, 400, "Review must be less than 300 characters", "Review length too long");
     }
 
+    const user = await getUserById(req.userID);
     const reviewTemplate = {
       userID: req.userID,
+      username: user.username,
       rating: rating,
       review: reviews,
       createAt: ts,

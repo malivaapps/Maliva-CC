@@ -93,8 +93,6 @@ const updateRatingupdateDestinationRating = async (destinationID) => {
   const roundedRating = Math.round(newRating * 10) / 10;
 
   await destinationRef.update({ Rating: roundedRating });
-
-  console.log(`Updated destination ${destinationID} rating to ${roundedRating}`);
 };
 
 const uploadImageToGallery = async (destinationID, file) => {

@@ -18,6 +18,10 @@ const addUserData = async (userID, userData) => {
   await firestore.collection("Users").doc(userID).set(userData);
 };
 
+const addDataHistory = async (searchID, dataHistory) => {
+  await firestore.collection("SearchHistory").doc(searchID).set(dataHistory);
+};
+
 const updateUserData = async (userID, userData) => {
   const usersRef = firestore.collection("Users").doc(userID);
   await usersRef.update(userData);
@@ -41,6 +45,15 @@ const getUserData = async (email) => {
   return user;
 };
 
+const getUserById = async (userID) => {
+  const usersRef = firestore.collection("Users").doc(userID);
+  const snapshot = await usersRef.get();
+  if (!snapshot.exists) {
+    return null;
+  }
+  return snapshot.data();
+};
+
 const createSession = async (sessionID, sessionData) => {
   await firestore.collection("Session").doc(sessionID).set(sessionData);
 };
@@ -59,4 +72,4 @@ const dropSession = async (sessionID) => {
   await sessionRef.delete();
 };
 
-module.exports = { getUserData, addUserData, updateUserData, createSession, getSession, checkEmail, dropSession };
+module.exports = { getUserData, getUserById, addDataHistory, addUserData, updateUserData, createSession, getSession, checkEmail, dropSession };
