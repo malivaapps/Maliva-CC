@@ -7,6 +7,8 @@ const config = {
   googleServiceCreden: JSON.parse(process.env.CREDENTIALS),
   secret: process.env.SECRET_KEY,
   bucketName: process.env.STORAGE_NAME,
+  tripPlanModel: process.env.TRIP_PLAN_MODEL,
+  recommendationModel: process.env.RECOMMENDATION_MODEL
 };
 
 const firestoreAuth = {

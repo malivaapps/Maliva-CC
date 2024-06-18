@@ -9,6 +9,7 @@ const { errorResponse } = require('./src/utils/response')
 const authRoutes = require('./src/routes/authRoutes')
 const tripRoutes = require('./src/routes/tripRoutes')
 const destinationRoutes = require('./src/routes/destinationRoutes')
+const recommedationRoutes = require('./src/routes/recommendationRoutes');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -20,6 +21,7 @@ app.set('trustProxy', 1);
 router.use('/authenticate', authRoutes)
 router.use('/trip', tripRoutes)
 router.use('/destination', destinationRoutes)
+router.use('/recommendation', recommedationRoutes)
 
 router.get("/", (req, res) => {
   res.json("Welcome to Maliva API")
