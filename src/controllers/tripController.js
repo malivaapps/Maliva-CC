@@ -20,7 +20,7 @@ const fetchPlannerData = async (query) => {
 
 const getPlanner = async (req, res) => {
      try {
-          const { title } = req.body;
+          const { title } = req.params;
           const planData = await fetchPlannerData(req.query);
           successResponse(res, 200, "Generate success", { title: title, plan: planData });
      } catch (error) {

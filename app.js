@@ -1,6 +1,5 @@
 const express = require('express')
 const app = express()
-const cors = require('cors');
 const router = express.Router();
 const { config } = require('./src/config/authServices')
 
@@ -17,7 +16,6 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(rateLimit(100));
 
-app.use(cors());
 app.set('trustProxy', 1);
 
 router.use('/authenticate', authRoutes)
