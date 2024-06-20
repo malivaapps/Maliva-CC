@@ -8,8 +8,8 @@ const { firestoreAuth } = require('../config/authServices');
 const firestore = new Firestore(firestoreAuth);
 
 const fetchPlannerData = async (query) => {
-     const { category, type, child, budget, lat, long, nrec } = query;
-     const searchQuery = `category=${category}&type=${type}&child=${child}&budget=${budget}&lat=${lat}&long=${long}&nrec=${nrec}`;
+     const { category, type, child, budget, lat, long, nrec, title } = query;
+     const searchQuery = `category=${category}&type=${type}&child=${child}&budget=${budget}&lat=${lat}&long=${long}&nrec=${nrec}&title=${title}`;
      try {
           const response = await axios.get(`${config.tripPlanModel}/planner?${searchQuery}`);
           return response.data.plan;
@@ -20,7 +20,7 @@ const fetchPlannerData = async (query) => {
 
 const getPlanner = async (req, res) => {
      try {
-          const { title } = req.params;
+          const title = req.query.title
           const planData = await fetchPlannerData(req.query);
           successResponse(res, 200, "Generate success", { title: title, plan: planData });
      } catch (error) {
