@@ -22,8 +22,9 @@ const fetchPlannerData = async (query) => {
 
 const getPlanner = async (req, res) => {
      try {
+          const { title } = req.body;
           const planData = await fetchPlannerData(req.query);
-          successResponse(res, 200, "Generate success", { plan: planData });
+          successResponse(res, 200, "Generate success", { title: title, plan: planData });
      } catch (error) {
           errorResponse(res, 500, "Error Found", error.message);
      }
@@ -38,22 +39,21 @@ const getTripPlanByID = async (req, res) => {
 
           const tripPlans = [];
           tripPlanSnapshot.forEach(doc => {
-               tripPlans.push({ plan: doc.data().plan });
+               tripPlans.push({ id: doc.id, title: doc.data().title, plan: doc.data().plan });
           });
 
-          successResponse(res, 200, "Success get", { plan: tripPlans });
+          successResponse(res, 200, "Success get", tripPlans);
      } catch (error) {
           errorResponse(res, 500, "Error Found", error.message);
      }
 };
 
-
 const saveTripPlan = async (req, res) => {
      try {
+          const { title } = req.query;
           const generateID = uuidv4();
           const planData = await fetchPlannerData(req.query);
-
-          await storeGeneratePlan(generateID, { userID: req.userID, plan: planData });
+          await storeGeneratePlan(generateID, { title: title, userID: req.userID, plan: planData });
           successResponse(res, 200, "Success store", { plan: planData });
      } catch (error) {
           errorResponse(res, 500, "Error Found", error.message);
@@ -66,8 +66,7 @@ const deleteTripPlan = async (req, res) => {
      try {
           const docRef = firestore.collection('Trip Plan').doc(generateID);
           const userDocRef = docRef.collection('users').doc(req.userID);
-          const tripPlanSnapshot = await userDocRef.get();
-
+          const tripPlanSnapshot = await docRef.get();
 
           if (!tripPlanSnapshot.exists) {
                return errorResponse(res, 404, "Not Found", "Trip Plan not found");
