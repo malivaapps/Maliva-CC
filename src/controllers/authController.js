@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const validator = require("validator");
 const { v4: uuidv4 } = require("uuid");
 
-const { getUserData, addUserData, updateUserData, createSession, checkEmail, dropSession } = require("../services/authDataServices");
+const { getProfileById, getUserData, addUserData, updateUserData, createSession, checkEmail, dropSession } = require("../services/authDataServices");
 
 const { successResponse, errorResponse } = require("../utils/response");
 
@@ -39,6 +39,19 @@ const updateProfile = async (req, res) => {
     const userData = { username: username, password: hash };
     await updateUserData(req.userID, userData);
     successResponse(res, 200, "Profile Updated", { username });
+  } catch (error) {
+    errorResponse(res, 500, "Error Found", error.message);
+  }
+};
+
+const getProfile = async (req, res) => {
+  try {
+    const userID = req.userID; // assuming req.user is set by requireAuth middleware
+    const profileData = await getProfileById(userID);
+    if (!profileData) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    successResponse(res, 200, "Profile Found", profileData);
   } catch (error) {
     errorResponse(res, 500, "Error Found", error.message);
   }
@@ -113,6 +126,7 @@ const logout = async (req, res) => {
 };
 
 module.exports = {
+  getProfile,
   updateProfile,
   signUp,
   signIn,

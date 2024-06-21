@@ -1,6 +1,8 @@
 const { Firestore } = require("@google-cloud/firestore");
 const { firestoreAuth } = require("../config/authServices");
 const firestore = new Firestore(firestoreAuth);
+const { successResponse, errorResponse } = require("../utils/response");
+
 
 const checkEmail = async (email) => {
   const usersRef = firestore.collection("Users");
@@ -26,6 +28,19 @@ const updateUserData = async (userID, userData) => {
   const usersRef = firestore.collection("Users").doc(userID);
   await usersRef.update(userData);
 
+};
+
+const getProfileById = async (userID) => {
+  const usersRef = firestore.collection("Users").doc(userID);
+  const snapshot = await usersRef.get();
+  if (!snapshot.exists) {
+    return null;
+  }
+  const data = snapshot.data();
+  return {
+    username: data.username,
+    email: data.email
+  };
 };
 
 const getUserData = async (email) => {
@@ -72,4 +87,4 @@ const dropSession = async (sessionID) => {
   await sessionRef.delete();
 };
 
-module.exports = { getUserData, getUserById, addDataHistory, addUserData, updateUserData, createSession, getSession, checkEmail, dropSession };
+module.exports = { getProfileById, getUserData, getUserById, addDataHistory, addUserData, updateUserData, createSession, getSession, checkEmail, dropSession };
